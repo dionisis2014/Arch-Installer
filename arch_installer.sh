@@ -105,8 +105,8 @@ printf "${C_BLUE}${M_BOLD}Generating fstab ...${C_RESET}\n"
 genfstab -U /mnt >> /mnt/etc/fstab
 
 printf "${C_BLUE}${M_BOLD}Creating script file for arch-chroot environment ...${C_RESET}\n"
-cat > "/mnt/tmp/script.sh" << EOF
-#!/bin/bash
+printf "${C_BLUE}${M_BOLD}Entering arch-chroot ...${C_RESET}\n"
+arch-chroot /mnt << EOF
 
 #Arch Linux automated install script by dionisis2014
 
@@ -176,14 +176,5 @@ else
     grub-mkconfig -o /boot/grub/grub.cfg
 fi
 EOF
-chmod +x "/mnt/tmp/script.sh"
-printf "${C_BLUE}${M_BOLD}Entering arch-chroot ...${C_RESET}\n"
-arch-chroot /mnt "/mnt/tmp/$0"
-sh "/mnt/tmp/script.sh"
-if [ $? ]
-then
-    printf "${C_RED}Subscript failed! Aborted installation!${C_RESET}\n"
-    exit 4
-fi
 
 printf "${C_GREEN}${M_BOLD}Installation finished! Shutdown computer and remove live media.\n"
