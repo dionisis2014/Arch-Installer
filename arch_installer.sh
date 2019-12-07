@@ -212,9 +212,4 @@ else
 fi
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
-if [[ $? == 0]]
-then
-    printf "${BOLD}${GREEN}Installation script finished successfully!${RST}\n"
-else
-    printf "${BOLD}${RED}Installation script failed!${RST}\n"
-fi
+printf "${BOLD}${GREEN}Installation script finished successfully!${RST}\n"
