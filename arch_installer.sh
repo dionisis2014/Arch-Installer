@@ -65,7 +65,7 @@ do
     read -r response
     if [[ ${response} =~ ^([a-zA-Z0-9.-_]+)$ ]]
     then
-        HOSTNAME=$response
+        USERNAME=$response
         break
     else
         printf "${BOLD}${RED}Username ${RST}${BOLD}\"${response}\"${RED} is invalid!${RST}\n"
@@ -88,8 +88,8 @@ then
 else
     printf "${RED}false${RST}\n"
 fi
-print "\tHostname:\t $HOSTNAME\n"
-print "\tUsername:\t $USERNAME\n"
+printf "\tHostname:\t\t $HOSTNAME\n"
+printf "\tUsername:\t\t $USERNAME\n"
 echo
 
 printf "${BOLD}${MAGENTA}Step 2: Select drive to install to${RST}\n"
@@ -141,8 +141,8 @@ n
 
 w
 EOF
-    mkfs.fat -F -F32 "${DISK}1"
-    mkfs.ext4 -F "${DISK}2"
+    mkfs.fat -F -F -F32 "${DISK}1"
+    mkfs.ext4 -F -F "${DISK}2"
 else
     fdisk ${DISK} << EOF
 g
@@ -152,7 +152,7 @@ n
 
 w
 EOF
-    mkfs.ext4 "${DISK}1"
+    mkfs.ext4 -F -F "${DISK}1"
 fi
 printf "${BOLD}${BLUE}Mounting filesystem ...${RST}\n"
 if [[ $EFI_SET == 0 ]]
@@ -172,7 +172,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 printf "${BOLD}${BLUE}Setting locale ...${RST}\n"
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Athens /etc/localtime
 printf "${BOLD}${BLUE}Setting hardware clock from system time ...${RST}\n"
-arch-chroot /mnt hwclock --systohw
+arch-chroot /mnt hwclock --systohc
 printf "${BOLD}${BLUE}Generating locales ...${RST}\n"
 arch-chroot /mnt sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
 arch-chroot /mnt locale-gen
@@ -190,25 +190,25 @@ else
     arch-chroot /mnt pacman -S --noconfirm amd-ucode
 fi
 printf "${BOLD}${BLUE}Enabling systemd services ...${RST}\n"
-arch-chroot /mnt systemd enable sshd
-arch-chroot /mnt systemd enable ntpd
-arch-chroot /mnt systemd enable NetworkManager
+arch-chroot /mnt systemctl enable sshd
+arch-chroot /mnt systemctl enable ntpd
+arch-chroot /mnt systemctl enable NetworkManager
 printf "${BOLD}${BLUE}Enabling wheel group ...${RST}\n"
 arch-chroot /mnt sed -i 's/^# %wheel ALL=(ALL) ALL/ %wheel ALL=(ALL) ALL/' /etc/sudoers
 printf "${BOLD}${BLUE}Adding new user ...${RST}\n"
-arch-chroot /mnt "useradd -m -g users -G wheel -s /bin/bash $USERNAME"
+arch-chroot /mnt useradd -m -g users -G wheel -s /bin/bash "$USERNAME"
 printf "${BOLD}${BLUE}Setting user password ...${RST}\n"
-arch-chroot /mnt "passwd $USERNAME"
+arch-chroot /mnt passwd "$USERNAME"
 if [[ EFI_SET == 0 ]]
 then
     printf "${BOLD}${BLUE}Installing bootloader for UEFI ...${RST}\n"
     arch-chroot /mnt pacman -S --noconfirm efibootmgr
     arch-chroot /mnt mkdir /efi
-    arch-chroot /mnt "mount $DISK1 /efi"
-    arch-chroot /mnt "grub-install --target=x86_64-efi --efi-directory=efi --bootloader-id=GRUB"
+    arch-chroot /mnt mount "$DISK1" /efi
+    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=efi --bootloader-id=GRUB
 else
     printf "${BOLD}${BLUE}Installing bootloader ...${RST}\n"
-    arch-chroot /mnt "grub-install $DISK"
+    arch-chroot /mnt grub-install "$DISK"
 fi
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
