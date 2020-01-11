@@ -141,8 +141,8 @@ n
 
 w
 EOF
-    mkfs.fat -F -F -F32 "${DISK}1"
-    mkfs.ext4 -F -F "${DISK}2"
+    mkfs.fat -F32 "${DISK}1"
+    mkfs.ext4 "${DISK}2"
 else
     fdisk ${DISK} << EOF
 g
@@ -152,7 +152,7 @@ n
 
 w
 EOF
-    mkfs.ext4 -F -F "${DISK}1"
+    mkfs.ext4 "${DISK}1"
 fi
 printf "${BOLD}${BLUE}Mounting filesystem ...${RST}\n"
 if [[ $EFI_SET == 0 ]]
